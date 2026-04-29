@@ -7,6 +7,7 @@ import checkoutRouter from './routes/checkout.js';
 import webhookRouter from './routes/webhook.js';
 import ordersRouter from './routes/orders.js';
 import walletRouter from './routes/wallet.js';
+import authRouter from './routes/auth.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -28,6 +29,7 @@ app.use('/api/checkout', checkoutRouter);
 app.use('/api/webhook', webhookRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/wallet', walletRouter);
+app.use('/api/auth', authRouter);
 
 // Fallback for root routes (Render seems to be hitting these)
 app.use('/services', servicesRouter);
@@ -35,6 +37,7 @@ app.use('/orders', ordersRouter);
 app.use('/wallet', walletRouter);
 app.use('/webhook', webhookRouter);
 app.use('/checkout', checkoutRouter);
+app.use('/auth', authRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

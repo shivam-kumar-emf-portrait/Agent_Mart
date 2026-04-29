@@ -78,12 +78,13 @@ export async function simulatePayment(sessionId) {
   return res.json();
 }
 
-export async function fetchWalletBalance() {
+export async function fetchWalletBalance(walletId) {
+  if (!walletId) return { balance: 0 };
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 3000);
   
   try {
-    const res = await fetch(`${BASE_URL}/wallet/balance`, { signal: controller.signal });
+    const res = await fetch(`${BASE_URL}/wallet/balance?wallet_id=${walletId}`, { signal: controller.signal });
     clearTimeout(timeoutId);
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -97,12 +98,12 @@ export async function fetchWalletBalance() {
   }
 }
 
-export async function depositFunds(amount) {
-  console.log('[WALLET] Initiating deposit:', amount);
+export async function depositFunds(amount, walletId) {
+  console.log('[WALLET] Initiating deposit:', amount, walletId);
   const res = await fetch(`${BASE_URL}/wallet/deposit`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ amount }),
+    body: JSON.stringify({ amount, wallet_id: walletId }),
   });
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
@@ -111,11 +112,42 @@ export async function depositFunds(amount) {
   return res.json();
 }
 
-export async function payWithWallet(serviceId, buyerInput, sessionId) {
+export async function loginUser(email, password) {
+  const res = await fetch(`${BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Login failed');
+  }
+  return res.json();
+}
+
+export async function registerUser(email, password) {
+  const res = await fetch(`${BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Registration failed');
+  }
+  return res.json();
+}
+
+export async function payWithWallet(serviceId, buyerInput, sessionId, walletId) {
   const res = await fetch(`${BASE_URL}/wallet/pay`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ service_id: serviceId, buyer_input: buyerInput, session_id: sessionId }),
+    body: JSON.stringify({ 
+      service_id: serviceId, 
+      buyer_input: buyerInput, 
+      session_id: sessionId,
+      wallet_id: walletId
+    }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

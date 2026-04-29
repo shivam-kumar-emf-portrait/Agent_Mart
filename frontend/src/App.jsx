@@ -6,7 +6,9 @@ import CheckoutPage from './pages/CheckoutPage.jsx';
 import ResultPage from './pages/ResultPage.jsx';
 import Activity from './pages/Activity.jsx';
 import { WalletProvider, useWallet } from './context/WalletContext.jsx';
+import { AuthProvider } from './context/AuthContext.jsx';
 import DepositModal from './components/DepositModal.jsx';
+import LoginPage from './pages/LoginPage.jsx';
 
 function AppContent() {
   const { isModalOpen, closeModal } = useWallet();
@@ -18,6 +20,7 @@ function AppContent() {
       <main>
         <Routes>
           <Route path="/" element={<Marketplace />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/service/:id" element={<ServiceDetail />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/result" element={<ResultPage />} />
@@ -36,8 +39,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <WalletProvider>
-      <AppContent />
-    </WalletProvider>
+    <AuthProvider>
+      <WalletProvider>
+        <AppContent />
+      </WalletProvider>
+    </AuthProvider>
   );
 }

@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { fetchOrder, simulatePayment, payWithWallet } from '../api';
 import { useWallet } from '../context/WalletContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function CheckoutPage() {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const navigate = useNavigate();
   const { balance, refreshBalance } = useWallet();
+  const { walletId } = useAuth();
   
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -39,10 +41,10 @@ export default function CheckoutPage() {
   };
 
   const handleWalletPayment = async () => {
-    if (!order) return;
+    if (!order || !walletId) return;
     setProcessing(true);
     try {
-      const res = await payWithWallet(order.service_id, order.buyer_input, sessionId);
+      const res = await payWithWallet(order.service_id, order.buyer_input, sessionId, walletId);
       await refreshBalance();
       navigate(`/result?session_id=${res.session_id}`);
     } catch (err) {
@@ -52,147 +54,133 @@ export default function CheckoutPage() {
   };
 
   if (loading) return (
-    <div className="max-w-3xl mx-auto py-20 px-4 text-center">
-      <div className="animate-spin w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-      <p className="text-navy-400">Loading checkout session...</p>
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <div className="animate-spin w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full mx-auto"></div>
     </div>
   );
 
   if (error) return (
-    <div className="max-w-md mx-auto py-20 px-4">
-      <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 text-center">
-        <svg className="w-12 h-12 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white border border-gray-200 rounded-[40px] p-10 text-center shadow-xl text-black">
+        <svg className="w-16 h-16 text-red-500 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
-        <h2 className="text-white font-bold text-lg mb-2">Checkout Error</h2>
-        <p className="text-navy-400 mb-6">{error}</p>
-        <button onClick={() => navigate('/')} className="text-indigo-400 hover:text-indigo-300 font-bold">Return to Marketplace</button>
+        <h2 className="text-2xl font-black mb-4">Checkout Error</h2>
+        <p className="text-gray-500 mb-8 font-medium">{error}</p>
+        <button onClick={() => navigate('/')} className="bg-black text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-gray-800 transition-all">Return to Home</button>
       </div>
     </div>
   );
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-      <div className="bg-navy-800/50 border border-navy-700 rounded-2xl overflow-hidden shadow-2xl">
-        <div className="p-8 border-b border-navy-700">
-          <div className="flex justify-between items-end">
-            <div>
-              <h1 className="text-2xl font-bold text-white mb-2">Pay with USDC</h1>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-green-500 text-xs font-bold uppercase tracking-widest">Secured</span>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-navy-400 text-sm uppercase font-bold mb-1">Total</p>
-              <p className="text-4xl font-mono font-bold text-green-400">{order?.service?.price_usdc.toFixed(2)} <span className="text-xl">USDC</span></p>
-            </div>
+    <div className="min-h-screen bg-[#F9FAFB] flex flex-col items-center py-20 px-4">
+      
+      {/* Locus Brand Header */}
+      <div className="text-center mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
+         <div className="flex justify-center mb-4">
+            <svg className="w-14 h-14 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2L12 22M2 12L22 12M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9L12 2Z" fill="currentColor" fillOpacity="0.1"/>
+            </svg>
+         </div>
+         <h1 className="text-4xl font-black italic tracking-tighter text-black">LOCUS</h1>
+      </div>
+
+      <div className="w-full max-w-[500px] space-y-6 animate-in fade-in zoom-in duration-500">
+        
+        {/* Amount Card */}
+        <div className="bg-white border border-gray-200 rounded-[32px] p-10 shadow-sm relative overflow-hidden">
+          <div className="flex justify-between items-start mb-6">
+             <div>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Amount due</p>
+                <h2 className="text-5xl font-black text-black tabular-nums">${order?.service?.price_usdc.toFixed(2)}</h2>
+             </div>
+             <div className="px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-lg">
+                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest flex items-center">
+                  <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full mr-2 animate-pulse" />
+                  USDC on Base
+                </span>
+             </div>
+          </div>
+          
+          <div className="pt-6 border-t border-gray-100">
+             <p className="text-xs font-bold text-gray-500 leading-relaxed italic">
+                Execution of <span className="text-black">{order?.service?.name}</span> for {order?.buyer_input?.substring(0, 40)}...
+             </p>
           </div>
         </div>
 
-        <div className="p-8 grid md:grid-cols-2 gap-8">
-          {/* Option 1: External Wallet (Locus) */}
-          <div className="space-y-6">
-            <div className="bg-navy-900/50 border border-navy-700 rounded-xl p-6 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full -mr-12 -mt-12 group-hover:bg-indigo-500/10 transition-colors"></div>
-              
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="w-12 h-12 bg-navy-800 rounded-xl flex items-center justify-center border border-navy-700">
-                  <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-white font-bold">Locus Checkout</h3>
-                  <p className="text-navy-400 text-xs">Connect wallet → Approve USDC → Confirm</p>
-                </div>
-              </div>
-
-              <ul className="space-y-3 mb-8">
-                {['On-chain settlement via USDC ERC-20', 'Non-custodial — funds go directly to seller', 'AI task runs automatically after confirmation'].map((feat, i) => (
-                  <li key={i} className="flex items-center space-x-3 text-sm text-navy-300">
-                    <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>{feat}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="bg-black/20 rounded-lg p-3 font-mono text-[10px] text-navy-500 mb-6">
-                session: {sessionId}
-              </div>
-
-              <button
+        {/* Payment Methods Card */}
+        <div className="bg-white border border-gray-200 rounded-[32px] p-8 shadow-sm">
+           <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 ml-1">Choose payment method</h3>
+           
+           <div className="space-y-4">
+              {/* Pay with Locus (Simulated) */}
+              <button 
                 onClick={handleSimulatePayment}
                 disabled={processing}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold py-4 rounded-xl flex items-center justify-center space-x-2 shadow-xl shadow-indigo-500/20 transition-all active:scale-[0.98]"
+                className="w-full group flex items-center justify-between p-5 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-[24px] transition-all active:scale-[0.98]"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <div className="flex items-center gap-5">
+                   <div className="w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20 group-hover:scale-105 transition-transform">
+                      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M12 2L12 22M2 12L22 12M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9L12 2Z" fill="white" />
+                      </svg>
+                   </div>
+                   <div className="text-left">
+                      <p className="text-sm font-black text-black uppercase tracking-wide">Pay with Locus</p>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Login to pay instantly</p>
+                   </div>
+                </div>
+                <svg className="w-5 h-5 text-gray-300 group-hover:text-black group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                 </svg>
-                <span>{processing ? 'Processing...' : `Simulate Locus Payment — ${order?.service?.price_usdc.toFixed(2)} USDC`}</span>
               </button>
-            </div>
-          </div>
 
-          {/* Option 2: AgentMart Wallet */}
-          <div className="space-y-6">
-            <div className="bg-navy-900/50 border border-indigo-500/30 rounded-xl p-6 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/5 rounded-full -mr-12 -mt-12 group-hover:bg-green-500/10 transition-colors"></div>
-              
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="w-12 h-12 bg-navy-800 rounded-xl flex items-center justify-center border border-navy-700">
-                  <span className="text-white font-bold text-xl">AM</span>
-                </div>
-                <div>
-                  <h3 className="text-white font-bold">AgentMart Wallet</h3>
-                  <p className="text-navy-400 text-xs">Pay instantly from your account balance</p>
-                </div>
-              </div>
-
-              <div className="mb-8 p-4 bg-navy-800/50 rounded-lg border border-navy-700">
-                <p className="text-navy-400 text-xs uppercase font-bold mb-1">Your Balance</p>
-                <p className="text-2xl font-mono font-bold text-white">{balance.toFixed(2)} <span className="text-indigo-400 text-sm">USDC</span></p>
-                {balance < (order?.service?.price_usdc || 0) && (
-                  <p className="text-red-400 text-[10px] mt-2 font-bold flex items-center">
-                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                    Insufficient balance
-                  </p>
-                )}
-              </div>
-
-              <button
+              {/* Pay with AgentMart Wallet */}
+              <button 
                 onClick={handleWalletPayment}
                 disabled={processing || balance < (order?.service?.price_usdc || 0)}
-                className="w-full bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white font-bold py-4 rounded-xl flex items-center justify-center space-x-2 shadow-xl shadow-green-500/20 transition-all active:scale-[0.98]"
+                className="w-full group flex items-center justify-between p-5 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-[24px] transition-all active:scale-[0.98] disabled:opacity-50"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <div className="flex items-center gap-5">
+                   <div className="w-12 h-12 bg-black text-white rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                      <span className="font-black text-lg">AM</span>
+                   </div>
+                   <div className="text-left">
+                      <p className="text-sm font-black text-black uppercase tracking-wide">AgentMart Wallet</p>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Balance: {balance.toFixed(2)} USDC</p>
+                   </div>
+                </div>
+                <svg className="w-5 h-5 text-gray-300 group-hover:text-black group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                 </svg>
-                <span>{processing ? 'Processing...' : 'Pay from AM Wallet'}</span>
               </button>
-              
-              <p className="mt-4 text-center text-navy-400 text-[10px]">
-                One-click payment for authorized agents
-              </p>
-            </div>
-          </div>
+
+              {/* External Wallet */}
+              <button 
+                className="w-full group flex items-center justify-between p-5 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-[24px] transition-all active:scale-[0.98]"
+              >
+                <div className="flex items-center gap-5">
+                   <div className="w-12 h-12 bg-white border border-gray-200 text-gray-400 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                   </div>
+                   <div className="text-left">
+                      <p className="text-sm font-black text-black uppercase tracking-wide">External Wallet</p>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">MetaMask, Coinbase, etc.</p>
+                   </div>
+                </div>
+                <svg className="w-5 h-5 text-gray-300 group-hover:text-black group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+           </div>
         </div>
 
-        <div className="p-6 bg-navy-900/50 border-t border-navy-700 flex items-center space-x-3">
-          <div className="w-8 h-8 bg-navy-800 rounded-full flex items-center justify-center">
-            <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div className="flex-1">
-            <h4 className="text-white text-xs font-bold">Demo Mode</h4>
-            <p className="text-navy-500 text-[10px]">Both payment methods will trigger the AI task simulation for this hackathon demo.</p>
-          </div>
-        </div>
+        <p className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-[0.3em]">
+           Powered by Locus Protocol
+        </p>
       </div>
     </div>
   );

@@ -7,9 +7,12 @@ const router = Router();
 
 // Get wallet balance
 router.get('/balance', (req, res) => {
+  const { wallet_id } = req.query;
+  const wId = wallet_id || 'demo-wallet';
+  
   const db = getDB();
   const stmt = db.prepare('SELECT balance FROM wallets WHERE id = ?');
-  stmt.bind(['demo-wallet']);
+  stmt.bind([wId]);
   let balance = 0;
   if (stmt.step()) {
     balance = stmt.getAsObject().balance;
@@ -20,7 +23,9 @@ router.get('/balance', (req, res) => {
 
 // Deposit funds (Simulated)
 router.post('/deposit', (req, res) => {
-  const { amount } = req.body;
+  const { amount, wallet_id } = req.body;
+  const wId = wallet_id || 'demo-wallet';
+
   if (!amount || amount <= 0) {
     console.log('[WALLET] Invalid deposit amount:', amount);
     return res.status(400).json({ error: 'Invalid amount' });
@@ -28,11 +33,11 @@ router.post('/deposit', (req, res) => {
 
   try {
     const db = getDB();
-    console.log('[WALLET] Depositing:', amount);
-    db.run('UPDATE wallets SET balance = balance + ? WHERE id = ?', [amount, 'demo-wallet']);
+    console.log('[WALLET] Depositing:', amount, 'to', wId);
+    db.run('UPDATE wallets SET balance = balance + ? WHERE id = ?', [amount, wId]);
     
     db.run('INSERT INTO transactions (id, wallet_id, type, amount, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-      [uuidv4(), 'demo-wallet', 'deposit', amount, 'Manual deposit', Date.now()]);
+      [uuidv4(), wId, 'deposit', amount, 'Manual deposit', Date.now()]);
     
     saveDB();
     res.json({ success: true, message: `Deposited ${amount} USDC` });
@@ -44,7 +49,9 @@ router.post('/deposit', (req, res) => {
 
 // Pay with wallet
 router.post('/pay', async (req, res) => {
-  const { service_id, buyer_input } = req.body;
+  const { service_id, buyer_input, wallet_id } = req.body;
+  const wId = wallet_id || 'demo-wallet';
+
   if (!service_id) return res.status(400).json({ error: 'Missing service_id' });
 
   const db = getDB();
@@ -60,7 +67,7 @@ router.post('/pay', async (req, res) => {
 
   // Check balance
   const walletStmt = db.prepare('SELECT balance FROM wallets WHERE id = ?');
-  walletStmt.bind(['demo-wallet']);
+  walletStmt.bind([wId]);
   let balance = 0;
   if (walletStmt.step()) balance = walletStmt.getAsObject().balance;
   walletStmt.free();
@@ -70,7 +77,7 @@ router.post('/pay', async (req, res) => {
   }
 
   // Deduct balance
-  db.run('UPDATE wallets SET balance = balance - ? WHERE id = ?', [service.price_usdc, 'demo-wallet']);
+  db.run('UPDATE wallets SET balance = balance - ? WHERE id = ?', [service.price_usdc, wId]);
   
   // Create or Update order
   let final_session_id = req.body.session_id;
@@ -89,7 +96,7 @@ router.post('/pay', async (req, res) => {
 
   // Record transaction
   db.run('INSERT INTO transactions (id, wallet_id, type, amount, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-    [uuidv4(), 'demo-wallet', 'payment', -service.price_usdc, `Paid for ${service.name}`, Date.now()]);
+    [uuidv4(), wId, 'payment', -service.price_usdc, `Paid for ${service.name}`, Date.now()]);
 
   saveDB();
 

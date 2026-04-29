@@ -36,6 +36,13 @@ export async function initDB() {
 
     // Create Tables
     db.run(`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        email TEXT UNIQUE,
+        password TEXT,
+        created_at INTEGER
+      );
+
       CREATE TABLE IF NOT EXISTS services (
         id TEXT PRIMARY KEY,
         name TEXT,
@@ -58,7 +65,10 @@ export async function initDB() {
 
       CREATE TABLE IF NOT EXISTS wallets (
         id TEXT PRIMARY KEY,
-        balance REAL DEFAULT 0
+        user_id TEXT,
+        balance REAL DEFAULT 0,
+        updated_at INTEGER,
+        FOREIGN KEY(user_id) REFERENCES users(id)
       );
 
       CREATE TABLE IF NOT EXISTS transactions (
@@ -231,8 +241,16 @@ export async function initDB() {
     }
     stmt.free();
 
-    // Initial Wallet
-    db.run("INSERT INTO wallets VALUES (?, ?)", ['demo-wallet', 10.00]);
+    // Initial Demo User and Wallet with 5 USDC Bonus
+    const demoUserId = 'demo-user-id';
+    db.run('INSERT INTO users (id, email, password, created_at) VALUES (?, ?, ?, ?)', 
+      [demoUserId, 'demo@agentmart.ai', 'demo123', Date.now()]);
+    
+    db.run("INSERT INTO wallets (id, user_id, balance, updated_at) VALUES (?, ?, ?, ?)", 
+      ['demo-wallet', demoUserId, 5.00, Date.now()]);
+    
+    db.run('INSERT INTO transactions (id, wallet_id, type, amount, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+      ['initial-bonus', 'demo-wallet', 'bonus', 5.00, 'Registration Bonus', Date.now()]);
 
     saveDB();
     console.log(`[DB] Database initialized and seeded with ${services.length} services and demo wallet`);

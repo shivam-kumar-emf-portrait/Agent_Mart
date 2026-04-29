@@ -1,16 +1,23 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { fetchWalletBalance, depositFunds as apiDeposit } from '../api';
+import { useAuth } from './AuthContext';
 
 const WalletContext = createContext();
 
 export function WalletProvider({ children }) {
+  const { walletId } = useAuth();
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const refreshBalance = async () => {
+    if (!walletId) {
+      setBalance(0);
+      setLoading(false);
+      return;
+    }
     try {
-      const data = await fetchWalletBalance();
+      const data = await fetchWalletBalance(walletId);
       setBalance(data.balance);
     } catch (error) {
       console.error('Failed to refresh balance:', error);
@@ -20,7 +27,8 @@ export function WalletProvider({ children }) {
   };
 
   const deposit = async (amount) => {
-    await apiDeposit(amount);
+    if (!walletId) return;
+    await apiDeposit(amount, walletId);
     await refreshBalance();
   };
 
@@ -29,7 +37,7 @@ export function WalletProvider({ children }) {
 
   useEffect(() => {
     refreshBalance();
-  }, []);
+  }, [walletId]);
 
   return (
     <WalletContext.Provider value={{ 
