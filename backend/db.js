@@ -5,10 +5,18 @@ import path from 'path';
 const DB_DIR = path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DB_DIR, 'agentmart.db');
 
+console.log('[DB] Attempting to use database at:', DB_FILE);
+
 // Ensure database directory exists
 if (!fs.existsSync(DB_DIR)) {
-  fs.mkdirSync(DB_DIR, { recursive: true });
-  console.log('[DB] Created directory:', DB_DIR);
+  try {
+    fs.mkdirSync(DB_DIR, { recursive: true });
+    console.log('[DB] Created directory:', DB_DIR);
+  } catch (err) {
+    console.error('[DB] Failed to create directory:', err);
+  }
+} else {
+  console.log('[DB] Directory exists:', DB_DIR);
 }
 let db = null;
 let SQL = null;
