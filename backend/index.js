@@ -12,6 +12,10 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
 app.use(cors({
   origin: true, // Allow all origins for easier deployment testing
   credentials: true
