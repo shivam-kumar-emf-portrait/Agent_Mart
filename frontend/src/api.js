@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://agent-mart.onrender.com/api';
+const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3001/api' : 'https://agent-mart.onrender.com/api');
 
 export async function fetchServices() {
   const controller = new AbortController();
