@@ -21,16 +21,25 @@ router.get('/balance', (req, res) => {
 // Deposit funds (Simulated)
 router.post('/deposit', (req, res) => {
   const { amount } = req.body;
-  if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid amount' });
+  if (!amount || amount <= 0) {
+    console.log('[WALLET] Invalid deposit amount:', amount);
+    return res.status(400).json({ error: 'Invalid amount' });
+  }
 
-  const db = getDB();
-  db.run('UPDATE wallets SET balance = balance + ? WHERE id = ?', [amount, 'demo-wallet']);
-  
-  db.run('INSERT INTO transactions (id, wallet_id, type, amount, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-    [uuidv4(), 'demo-wallet', 'deposit', amount, 'Manual deposit', Date.now()]);
-  
-  saveDB();
-  res.json({ success: true, message: `Deposited ${amount} USDC` });
+  try {
+    const db = getDB();
+    console.log('[WALLET] Depositing:', amount);
+    db.run('UPDATE wallets SET balance = balance + ? WHERE id = ?', [amount, 'demo-wallet']);
+    
+    db.run('INSERT INTO transactions (id, wallet_id, type, amount, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+      [uuidv4(), 'demo-wallet', 'deposit', amount, 'Manual deposit', Date.now()]);
+    
+    saveDB();
+    res.json({ success: true, message: `Deposited ${amount} USDC` });
+  } catch (err) {
+    console.error('[WALLET] Deposit DB error:', err);
+    res.status(500).json({ error: 'Database error: ' + err.message });
+  }
 });
 
 // Pay with wallet

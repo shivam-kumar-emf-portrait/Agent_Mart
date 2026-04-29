@@ -73,7 +73,7 @@ export async function simulatePayment(sessionId) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Simulation failed');
+    throw new Error(err.error || err.message || 'Simulation failed');
   }
   return res.json();
 }
@@ -85,7 +85,10 @@ export async function fetchWalletBalance() {
   try {
     const res = await fetch(`${BASE_URL}/wallet/balance`, { signal: controller.signal });
     clearTimeout(timeoutId);
-    if (!res.ok) throw new Error('Failed to fetch wallet balance');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || err.message || 'Failed to fetch wallet balance');
+    }
     return res.json();
   } catch (err) {
     clearTimeout(timeoutId);
@@ -95,12 +98,16 @@ export async function fetchWalletBalance() {
 }
 
 export async function depositFunds(amount) {
+  console.log('[WALLET] Initiating deposit:', amount);
   const res = await fetch(`${BASE_URL}/wallet/deposit`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ amount }),
   });
-  if (!res.ok) throw new Error('Deposit failed');
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Deposit failed');
+  }
   return res.json();
 }
 
