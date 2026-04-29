@@ -29,6 +29,12 @@ app.use('/api/webhook', webhookRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/wallet', walletRouter);
 
+// Fallback for root routes (Render seems to be hitting these)
+app.use('/services', servicesRouter);
+app.use('/orders', ordersRouter);
+app.use('/wallet', walletRouter);
+app.use('/webhook', webhookRouter);
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'AgentMart API', version: '1.0' });
