@@ -2,16 +2,16 @@ import { MockSignIn } from "../components/MockClerk";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const { mockLogin } = useAuth();
   const navigate = useNavigate();
 
-  const handleMockSignIn = async (email) => {
+  const handleMockSignUp = async (email) => {
     try {
       await mockLogin(email);
       navigate('/');
     } catch (err) {
-      alert("Login failed: " + err.message);
+      alert("Signup failed: " + err.message);
     }
   };
 
@@ -26,11 +26,11 @@ export default function LoginPage() {
             </div>
          </div>
          <h1 className="text-5xl font-black italic tracking-tighter text-black mb-2">LOCUS</h1>
-         <p className="text-gray-400 text-sm font-bold uppercase tracking-[0.4em]">AgentMart Protocol</p>
+         <p className="text-gray-400 text-sm font-bold uppercase tracking-[0.4em]">Create Protocol Account</p>
       </div>
 
       <div className="shadow-2xl rounded-[32px] overflow-hidden border border-white/20 scale-110">
-        <MockSignIn onSignIn={handleMockSignIn} />
+        <MockSignIn onSignIn={handleMockSignUp} />
       </div>
 
       <div className="mt-12 flex items-center gap-4 text-gray-300">

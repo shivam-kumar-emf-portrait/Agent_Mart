@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3001/api' : 'https://agent-mart.onrender.com/api');
+const BASE_URL = import.meta.env.DEV ? '/api' : (import.meta.env.VITE_API_URL || 'https://agent-mart.onrender.com/api');
 
 export async function fetchServices() {
   const controller = new AbortController();
@@ -112,28 +112,41 @@ export async function depositFunds(amount, walletId) {
   return res.json();
 }
 
-export async function loginUser(email, password) {
-  const res = await fetch(`${BASE_URL}/auth/login`, {
+export async function requestOTP(email, password, isRegister) {
+  const res = await fetch(`${BASE_URL}/auth/request-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, isRegister }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Login failed');
+    throw new Error(err.error || 'Failed to send OTP');
   }
   return res.json();
 }
 
-export async function registerUser(email, password) {
-  const res = await fetch(`${BASE_URL}/auth/register`, {
+export async function verifyOTP(email, otp) {
+  const res = await fetch(`${BASE_URL}/auth/verify-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, otp }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Registration failed');
+    throw new Error(err.error || 'Invalid OTP');
+  }
+  return res.json();
+}
+
+export async function syncUser(email) {
+  const res = await fetch(`${BASE_URL}/auth/sync`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Sync failed');
   }
   return res.json();
 }

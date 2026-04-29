@@ -9,6 +9,7 @@ import { WalletProvider, useWallet } from './context/WalletContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import DepositModal from './components/DepositModal.jsx';
 import LoginPage from './pages/LoginPage.jsx';
+import SignupPage from './pages/SignupPage.jsx';
 
 function AppContent() {
   const { isModalOpen, closeModal } = useWallet();
@@ -21,6 +22,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Marketplace />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
           <Route path="/service/:id" element={<ServiceDetail />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/result" element={<ResultPage />} />

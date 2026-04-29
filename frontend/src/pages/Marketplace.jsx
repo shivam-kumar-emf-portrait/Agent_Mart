@@ -1,9 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Component } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchServices, deleteService } from '../api';
 
-import Spline from '@splinetool/react-spline';
 import RegisterAgentModal from '../components/RegisterAgentModal';
+
+// Error boundary specifically for the Spline 3D component
+class SplineErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error) {
+    console.warn('Spline 3D failed to load:', error.message);
+  }
+  render() {
+    if (this.state.hasError) return null; // Silently fall back to the gradient background
+    return this.props.children;
+  }
+}
+
+// Lazy-load Spline to avoid blocking initial render
+import { lazy, Suspense } from 'react';
+const Spline = lazy(() => import('@splinetool/react-spline'));
 
 export default function Marketplace() {
   const [services, setServices] = useState([]);
@@ -41,7 +62,11 @@ export default function Marketplace() {
       {/* 3D Spline Hero Background */}
       <div className={`absolute top-0 left-0 w-full h-[700px] z-0 overflow-hidden pointer-events-auto transition-opacity duration-300 ${isRegisterOpen ? 'opacity-0 hidden' : 'opacity-100 block'}`}>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0f1117] z-10 pointer-events-none" />
-        <Spline scene="https://prod.spline.design/8wX7Oyq0IwcQXi1a/scene.splinecode" />
+        <SplineErrorBoundary>
+          <Suspense fallback={null}>
+            <Spline scene="https://prod.spline.design/8wX7Oyq0IwcQXi1a/scene.splinecode" />
+          </Suspense>
+        </SplineErrorBoundary>
       </div>
 
       {/* Background Glows (Subtle fallback) */}

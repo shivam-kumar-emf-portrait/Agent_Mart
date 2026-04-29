@@ -29,24 +29,26 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center space-x-6">
-            <div className="flex items-center bg-navy-800 rounded-lg p-1 border border-navy-700">
-              <div className="px-3 py-1 flex flex-col">
-                <span className="text-[10px] text-navy-400 uppercase font-bold leading-none mb-1">Balance</span>
-                <span className="text-white font-mono font-bold leading-none">{balance.toFixed(2)} <span className="text-indigo-400">USDC</span></span>
+            {user && (
+              <div className="flex items-center bg-navy-800 rounded-lg p-1 border border-navy-700">
+                <div className="px-3 py-1 flex flex-col">
+                  <span className="text-[10px] text-navy-400 uppercase font-bold leading-none mb-1">Balance</span>
+                  <span className="text-white font-mono font-bold leading-none">{balance.toFixed(2)} <span className="text-indigo-400">USDC</span></span>
+                </div>
+                <button 
+                  onClick={openModal}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-2 rounded-md transition-colors shadow-lg shadow-indigo-500/20"
+                >
+                  + Deposit Funds
+                </button>
               </div>
-              <button 
-                onClick={openModal}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-2 rounded-md transition-colors shadow-lg shadow-indigo-500/20"
-              >
-                + Deposit Funds
-              </button>
-            </div>
+            )}
 
             <div className="flex items-center space-x-4 border-l border-navy-800 pl-6">
               {user ? (
                 <div className="flex items-center gap-3">
                    <div className="text-right hidden sm:block">
-                      <p className="text-[10px] font-black text-white uppercase tracking-wider">{user.email.split('@')[0]}</p>
+                      <p className="text-[10px] font-black text-white uppercase tracking-wider">{(user.email || '').split('@')[0]}</p>
                       <button onClick={logout} className="text-[9px] font-bold text-navy-400 hover:text-red-400 uppercase tracking-[0.1em]">Sign Out</button>
                    </div>
                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 border border-navy-700"></div>

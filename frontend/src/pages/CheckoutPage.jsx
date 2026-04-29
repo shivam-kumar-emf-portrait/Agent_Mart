@@ -29,15 +29,9 @@ export default function CheckoutPage() {
       .finally(() => setLoading(false));
   }, [sessionId]);
 
-  const handleSimulatePayment = async () => {
-    setProcessing(true);
-    try {
-      await simulatePayment(sessionId);
-      navigate(`/result?session_id=${sessionId}`);
-    } catch (err) {
-      setError(err.message);
-      setProcessing(false);
-    }
+  const handleSimulatePayment = () => {
+    // Redirect to actual Locus Beta Checkout
+    window.location.href = 'https://beta-checkout.paywithlocus.com/98af48c5-fae8-4d84-8a4d-63ba5612c85a';
   };
 
   const handleWalletPayment = async () => {
@@ -104,7 +98,7 @@ export default function CheckoutPage() {
           
           <div className="pt-6 border-t border-gray-100">
              <p className="text-xs font-bold text-gray-500 leading-relaxed italic">
-                Execution of <span className="text-black">{order?.service?.name}</span> for {order?.buyer_input?.substring(0, 40)}...
+                Execution of <span className="text-black">{order?.service?.name}</span> for {String(order?.buyer_input || '').substring(0, 40)}...
              </p>
           </div>
         </div>

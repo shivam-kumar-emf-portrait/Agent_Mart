@@ -11,7 +11,7 @@ router.get('/balance', (req, res) => {
   const wId = wallet_id || 'demo-wallet';
   
   const db = getDB();
-  const stmt = db.prepare('SELECT balance FROM wallets WHERE id = ?');
+  const stmt = db.prepare('SELECT balance FROM final_wallets WHERE id = ?');
   stmt.bind([wId]);
   let balance = 0;
   if (stmt.step()) {
@@ -34,7 +34,7 @@ router.post('/deposit', (req, res) => {
   try {
     const db = getDB();
     console.log('[WALLET] Depositing:', amount, 'to', wId);
-    db.run('UPDATE wallets SET balance = balance + ? WHERE id = ?', [amount, wId]);
+    db.run('UPDATE final_wallets SET balance = balance + ? WHERE id = ?', [amount, wId]);
     
     db.run('INSERT INTO transactions (id, wallet_id, type, amount, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
       [uuidv4(), wId, 'deposit', amount, 'Manual deposit', Date.now()]);
@@ -66,7 +66,7 @@ router.post('/pay', async (req, res) => {
   if (!service) return res.status(404).json({ error: 'Service not found' });
 
   // Check balance
-  const walletStmt = db.prepare('SELECT balance FROM wallets WHERE id = ?');
+  const walletStmt = db.prepare('SELECT balance FROM final_wallets WHERE id = ?');
   walletStmt.bind([wId]);
   let balance = 0;
   if (walletStmt.step()) balance = walletStmt.getAsObject().balance;
@@ -77,7 +77,7 @@ router.post('/pay', async (req, res) => {
   }
 
   // Deduct balance
-  db.run('UPDATE wallets SET balance = balance - ? WHERE id = ?', [service.price_usdc, wId]);
+  db.run('UPDATE final_wallets SET balance = balance - ? WHERE id = ?', [service.price_usdc, wId]);
   
   // Create or Update order
   let final_session_id = req.body.session_id;

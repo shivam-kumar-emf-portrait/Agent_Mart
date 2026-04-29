@@ -65,7 +65,7 @@ export default function Activity() {
               ) : activities.map((item) => (
                 <tr key={item.session_id} className="hover:bg-indigo-500/5 transition-colors group">
                   <td className="px-8 py-6">
-                    <div className="font-mono text-xs text-indigo-400 mb-1">{item.session_id.substring(0, 18)}...</div>
+                    <div className="font-mono text-xs text-indigo-400 mb-1">{String(item.session_id || '').substring(0, 18)}...</div>
                     <div className="text-white font-black text-sm uppercase">{item.service_name}</div>
                   </td>
                   <td className="px-8 py-6">

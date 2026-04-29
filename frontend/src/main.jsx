@@ -15,9 +15,15 @@ class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '20px', color: 'white', background: 'red' }}>
+        <div className="min-h-screen bg-black text-white p-8">
           <h1>Something went wrong.</h1>
-          <pre>{this.state.error.toString()}</pre>
+          <pre className="mt-4 bg-gray-900 p-4 rounded">{this.state.error?.toString()}</pre>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 px-6 py-2 bg-indigo-600 rounded-lg"
+          >
+            Reload Page
+          </button>
         </div>
       );
     }
