@@ -136,3 +136,9 @@
 .border-accent-text { border-left: 3px solid #7c3aed; }
 .border-accent-code { border-left: 3px solid #3b82f6; }
 .border-accent-data { border-left: 3px solid #22c55e; }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
