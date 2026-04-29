@@ -3,6 +3,24 @@ import { getDB, saveDB } from '../db.js';
 
 const router = Router();
 
+// Get recent activity
+router.get('/recent', (req, res) => {
+  const db = getDB();
+  const stmt = db.prepare('SELECT o.*, s.name as service_name, s.price_usdc FROM orders o JOIN services s ON o.service_id = s.id ORDER BY o.created_at DESC LIMIT 10');
+  const results = [];
+  while (stmt.step()) {
+    const order = stmt.getAsObject();
+    results.push({
+      ...order,
+      buyer_input: JSON.parse(order.buyer_input),
+      result: order.result ? JSON.parse(order.result) : null
+    });
+  }
+  stmt.free();
+  res.json(results);
+});
+
+
 router.get('/:sessionId', (req, res) => {
   const { sessionId } = req.params;
   const db = getDB();

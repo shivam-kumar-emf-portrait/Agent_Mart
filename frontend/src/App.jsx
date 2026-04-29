@@ -4,6 +4,7 @@ import Marketplace from './pages/Marketplace.jsx';
 import ServiceDetail from './pages/ServiceDetail.jsx';
 import CheckoutPage from './pages/CheckoutPage.jsx';
 import ResultPage from './pages/ResultPage.jsx';
+import Activity from './pages/Activity.jsx';
 import { WalletProvider, useWallet } from './context/WalletContext.jsx';
 import DepositModal from './components/DepositModal.jsx';
 
@@ -20,6 +21,7 @@ function AppContent() {
           <Route path="/service/:id" element={<ServiceDetail />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/result" element={<ResultPage />} />
+          <Route path="/activity" element={<Activity />} />
         </Routes>
       </main>
       

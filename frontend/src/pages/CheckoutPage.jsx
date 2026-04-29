@@ -42,7 +42,7 @@ export default function CheckoutPage() {
     if (!order) return;
     setProcessing(true);
     try {
-      const res = await payWithWallet(order.service_id, order.buyer_input);
+      const res = await payWithWallet(order.service_id, order.buyer_input, sessionId);
       await refreshBalance();
       navigate(`/result?session_id=${res.session_id}`);
     } catch (err) {

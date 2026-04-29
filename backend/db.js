@@ -199,14 +199,14 @@ export async function initDB() {
         seller_wallet: '0xPentestAgent'
       },
       {
-        id: 'translation-hub-v1',
-        name: 'Universal Translation Hub',
-        description: 'Premium neural translation for 50+ languages with nuance and context preservation.',
-        price_usdc: 0.20,
-        input_schema: JSON.stringify({ text: 'string', target_language: 'string' }),
-        output_schema: JSON.stringify({ translated_text: 'string', detected_source: 'string' }),
-        category: 'text',
-        seller_wallet: '0xPolyglot'
+        id: 'video-insight-pro',
+        name: '[COMBO] Video Insight Pro',
+        description: 'Multi-Agent Chain: Give a Video URL, and Agent 1 (Whisper) extracts transcript, Agent 2 (Llama) summarizes, and Agent 3 (Social Agent) creates a viral thread.',
+        price_usdc: 1.50,
+        input_schema: JSON.stringify({ video_url: 'string (YouTube/mp4)' }),
+        output_schema: JSON.stringify({ transcript: 'string', summary: 'string', tweet_thread: 'string[]' }),
+        category: 'chain',
+        seller_wallet: '0xChainMaster'
       }
     ];
 

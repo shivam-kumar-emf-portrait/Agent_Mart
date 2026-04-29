@@ -18,6 +18,12 @@ export default function Navbar() {
                 <p className="text-navy-400 text-xs uppercase tracking-widest">AI Marketplace</p>
               </div>
             </Link>
+            <div className="hidden lg:flex items-center space-x-6 border-l border-navy-800 pl-6 h-10">
+              <Link to="/activity" className="text-[10px] font-black uppercase tracking-[0.2em] text-navy-400 hover:text-indigo-400 transition-colors flex items-center">
+                Live Activity
+                <span className="ml-2 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+              </Link>
+            </div>
           </div>
 
           <div className="flex items-center space-x-6">

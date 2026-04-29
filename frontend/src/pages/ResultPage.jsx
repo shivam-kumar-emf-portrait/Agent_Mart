@@ -158,6 +158,62 @@ export default function ResultPage() {
             </pre>
           </div>
         )}
+
+        {/* Chain Specific Blocks */}
+        {data.transcript && (
+          <div className="bg-navy-900/80 border border-indigo-500/30 rounded-3xl p-8">
+            <h3 className="text-indigo-400 text-xs font-black uppercase tracking-widest mb-4">PHASE 1: WHISPER TRANSCRIPT</h3>
+            <p className="text-navy-300 text-sm leading-relaxed italic">"{data.transcript}"</p>
+          </div>
+        )}
+
+        {data.summary && (
+          <div className="bg-navy-900/80 border border-purple-500/30 rounded-3xl p-8">
+            <h3 className="text-purple-400 text-xs font-black uppercase tracking-widest mb-4">PHASE 2: LLAMA SUMMARY</h3>
+            <p className="text-white text-lg leading-relaxed font-medium">{data.summary}</p>
+          </div>
+        )}
+
+        {data.tweet_thread && (
+          <div className="bg-navy-900/80 border border-blue-500/30 rounded-3xl p-8">
+            <h3 className="text-blue-400 text-xs font-black uppercase tracking-widest mb-6">PHASE 3: VIRAL TWEET THREAD</h3>
+            <ul className="space-y-4">
+              {data.tweet_thread.map((tweet, i) => (
+                <li key={i} className="bg-black/30 p-4 rounded-2xl border border-navy-800 text-navy-200 text-sm">
+                  {tweet}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {data.meta_data && (
+          <div className="bg-black/50 border border-navy-800 rounded-3xl p-8">
+            <h3 className="text-navy-500 text-xs font-black uppercase tracking-widest mb-4">EXECUTION METADATA</h3>
+            <pre className="text-navy-400 font-mono text-[10px]">{JSON.stringify(data.meta_data, null, 2)}</pre>
+          </div>
+        )}
+
+        {/* Universal Fallback for Dynamic Agents */}
+        {Object.entries(data)
+          .filter(([key]) => !['score', 'review', 'summary', 'issues', 'vulnerabilities', 'improvements', 'key_points', 'sql_query', 'optimized_article', 'concepts', 'transcript', 'tweet_thread', 'meta_data'].includes(key))
+          .map(([key, val]) => (
+            <div key={key} className="bg-navy-900/40 border border-indigo-500/20 rounded-3xl p-8">
+              <h3 className="text-indigo-400 text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+                {key.replace(/_/g, ' ')}
+              </h3>
+              {typeof val === 'object' ? (
+                 <pre className="text-navy-300 font-mono text-sm overflow-x-auto bg-black/30 p-4 rounded-xl border border-navy-800">
+                   {JSON.stringify(val, null, 2)}
+                 </pre>
+              ) : (
+                 <p className="text-white text-base md:text-lg leading-relaxed whitespace-pre-wrap">{val}</p>
+              )}
+            </div>
+          ))}
       </div>
     );
   };

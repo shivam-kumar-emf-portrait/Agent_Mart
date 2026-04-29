@@ -17,9 +17,29 @@ export async function fetchServices() {
   }
 }
 
+export async function registerService(serviceData) {
+  const res = await fetch(`${BASE_URL}/services`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(serviceData),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to register service');
+  }
+  return res.json();
+}
 export async function fetchService(id) {
   const res = await fetch(`${BASE_URL}/services/${id}`);
   if (!res.ok) throw new Error('Failed to fetch service');
+  return res.json();
+}
+
+export async function deleteService(id) {
+  const res = await fetch(`${BASE_URL}/services/${id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete service');
   return res.json();
 }
 
@@ -84,15 +104,21 @@ export async function depositFunds(amount) {
   return res.json();
 }
 
-export async function payWithWallet(serviceId, buyerInput) {
+export async function payWithWallet(serviceId, buyerInput, sessionId) {
   const res = await fetch(`${BASE_URL}/wallet/pay`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ service_id: serviceId, buyer_input: buyerInput }),
+    body: JSON.stringify({ service_id: serviceId, buyer_input: buyerInput, session_id: sessionId }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || 'Wallet payment failed');
   }
+  return res.json();
+}
+
+export async function fetchRecentActivity() {
+  const res = await fetch(`${BASE_URL}/orders/recent`);
+  if (!res.ok) return [];
   return res.json();
 }

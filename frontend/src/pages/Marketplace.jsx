@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchServices } from '../api';
+import { fetchServices, deleteService } from '../api';
+
+import Spline from '@splinetool/react-spline';
+import RegisterAgentModal from '../components/RegisterAgentModal';
 
 export default function Marketplace() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
 
   useEffect(() => {
     fetchServices()
@@ -14,28 +18,43 @@ export default function Marketplace() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filteredServices = filter === 'all' 
-    ? services 
+  const filteredServices = filter === 'all'
+    ? services
     : services.filter(s => s.category === filter);
 
   const categories = ['all', ...new Set(services.map(s => s.category))];
 
+  const handleDeleteService = async (e, id) => {
+    e.preventDefault();
+    if (window.confirm("Are you sure you want to delete this agent?")) {
+      try {
+        await deleteService(id);
+        setServices(prev => prev.filter(s => s.id !== id));
+      } catch (err) {
+        alert("Failed to delete agent: " + err.message);
+      }
+    }
+  };
+
   return (
     <div className="relative pb-20">
-      {/* Background Glows */}
-      <div className="absolute inset-0 -z-10 h-[600px] w-full overflow-hidden pointer-events-none">
+      {/* 3D Spline Hero Background */}
+      <div className={`absolute top-0 left-0 w-full h-[700px] z-0 overflow-hidden pointer-events-auto transition-opacity duration-300 ${isRegisterOpen ? 'opacity-0 hidden' : 'opacity-100 block'}`}>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0f1117] z-10 pointer-events-none" />
+        <Spline scene="https://prod.spline.design/8wX7Oyq0IwcQXi1a/scene.splinecode" />
+      </div>
+
+      {/* Background Glows (Subtle fallback) */}
+      <div className="absolute inset-0 z-0 h-[700px] w-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/20 blur-[120px] rounded-full"></div>
         <div className="absolute bottom-[20%] right-[-5%] w-[30%] h-[30%] bg-purple-500/20 blur-[100px] rounded-full"></div>
       </div>
 
       {/* Hero Section */}
-      <div className="max-w-7xl mx-auto pt-24 pb-16 px-4 sm:px-6 lg:px-8 text-center relative z-10">
-        <div>
-          <span className="inline-block px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold uppercase tracking-[0.2em] mb-6">
-            Live on Testnet — Cerebras Powered
-          </span>
+      <div className="max-w-7xl mx-auto pt-24 pb-16 px-4 sm:px-6 lg:px-8 text-center relative z-20 pointer-events-none">
+        <div className="pointer-events-auto">
           <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter mb-8 leading-[0.9]">
-            AGENTMART <br/>
+            AGENTMART <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
               AI SERVICES.
             </span>
@@ -62,11 +81,10 @@ export default function Marketplace() {
             <button
               key={cat}
               onClick={() => setFilter(cat)}
-              className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                filter === cat 
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' 
-                  : 'text-navy-400 hover:text-white hover:bg-navy-800'
-              }`}
+              className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filter === cat
+                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
+                : 'text-navy-400 hover:text-white hover:bg-navy-800'
+                }`}
             >
               {cat}
             </button>
@@ -78,7 +96,7 @@ export default function Marketplace() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[1,2,3,4,5,6].map(i => (
+            {[1, 2, 3, 4, 5, 6].map(i => (
               <div key={i} className="h-[400px] bg-navy-800/20 animate-pulse rounded-[32px] border border-navy-800" />
             ))}
           </div>
@@ -92,7 +110,15 @@ export default function Marketplace() {
                 <Link to={`/service/${service.id}`} className="block h-full">
                   <div className="h-full bg-navy-900/40 backdrop-blur-sm border-2 border-navy-800 rounded-[32px] p-8 transition-all group-hover:border-indigo-500/50 group-hover:bg-navy-900/60 overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -mr-16 -mt-16 group-hover:bg-indigo-500/10 transition-colors" />
-                    
+
+                    <button
+                      onClick={(e) => handleDeleteService(e, service.id)}
+                      className="absolute top-6 right-6 text-navy-500 hover:text-red-500 transition-colors z-20 bg-navy-800/80 p-2 rounded-full border border-navy-700"
+                      title="Delete Agent"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+
                     <div className="flex justify-between items-start mb-6">
                       <span className="px-3 py-1 bg-navy-800 rounded-lg text-[10px] font-black uppercase tracking-widest text-indigo-400 border border-navy-700">
                         {service.category} AI
@@ -136,15 +162,25 @@ export default function Marketplace() {
       </div>
 
       {/* Interactive Footer */}
-      <div className="max-w-7xl mx-auto px-4 mt-32 text-center relative z-10">
-        <div className="bg-gradient-to-b from-navy-800/50 to-transparent p-12 rounded-[40px] border border-navy-800/50">
+      <div className="max-w-7xl mx-auto px-4 mt-32 text-center relative z-20 pointer-events-none">
+        <div className="bg-gradient-to-b from-navy-800/50 to-transparent p-12 rounded-[40px] border border-navy-800/50 pointer-events-auto">
           <h2 className="text-4xl font-black text-white mb-4">Build the future of Agent-to-Agent economy.</h2>
           <p className="text-navy-400 mb-8">Launch your own agent and start earning USDC on-chain today.</p>
-          <button className="bg-white text-black px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all transform shadow-2xl">
+          <button
+            onClick={() => setIsRegisterOpen(true)}
+            className="bg-white text-black px-8 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all transform shadow-2xl">
             Register your Agent
           </button>
         </div>
       </div>
+
+      <RegisterAgentModal
+        isOpen={isRegisterOpen}
+        onClose={() => setIsRegisterOpen(false)}
+        onSuccess={(newService) => {
+          setServices(prev => [...prev, newService]);
+        }}
+      />
     </div>
   );
 }

@@ -63,12 +63,20 @@ router.post('/pay', async (req, res) => {
   // Deduct balance
   db.run('UPDATE wallets SET balance = balance - ? WHERE id = ?', [service.price_usdc, 'demo-wallet']);
   
-  // Create order
-  const session_id = `wallet_order_${uuidv4()}`;
-  db.run(
-    `INSERT INTO orders (session_id, service_id, buyer_input, status, created_at) VALUES (?, ?, ?, 'paid', ?)`,
-    [session_id, service_id, JSON.stringify(buyer_input), Date.now()]
-  );
+  // Create or Update order
+  let final_session_id = req.body.session_id;
+  if (final_session_id) {
+    db.run(
+      `UPDATE orders SET status = 'paid' WHERE session_id = ?`,
+      [final_session_id]
+    );
+  } else {
+    final_session_id = `wallet_order_${uuidv4()}`;
+    db.run(
+      `INSERT INTO orders (session_id, service_id, buyer_input, status, created_at) VALUES (?, ?, ?, 'paid', ?)`,
+      [final_session_id, service_id, JSON.stringify(buyer_input), Date.now()]
+    );
+  }
 
   // Record transaction
   db.run('INSERT INTO transactions (id, wallet_id, type, amount, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
@@ -77,9 +85,9 @@ router.post('/pay', async (req, res) => {
   saveDB();
 
   // START AGENT TASK IMMEDIATELY (Don't await, it runs in background)
-  runAgentTask(session_id, service_id, buyer_input).catch(console.error);
+  runAgentTask(final_session_id, service_id, buyer_input).catch(console.error);
 
-  res.json({ success: true, session_id });
+  res.json({ success: true, session_id: final_session_id });
 });
 
 export default router;

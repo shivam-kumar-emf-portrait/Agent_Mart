@@ -29,6 +29,32 @@ router.get('/', (req, res) => {
   });
 });
 
+router.post('/', (req, res) => {
+  const { name, description, price_usdc, category, input_schema, output_schema, seller_wallet } = req.body;
+  
+  if (!name || !description || price_usdc == null || !category || !input_schema || !output_schema || !seller_wallet) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  // Generate a simple ID
+  const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.floor(Math.random() * 1000);
+
+  const db = getDB();
+  try {
+    const stmt = db.prepare(`INSERT INTO services (id, name, description, price_usdc, input_schema, output_schema, category, seller_wallet) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+    stmt.run([id, name, description, parseFloat(price_usdc), input_schema, output_schema, category, seller_wallet]);
+    stmt.free();
+    
+    // Save DB after insertion
+    import('../db.js').then(({ saveDB }) => saveDB());
+
+    res.status(201).json({ id, name, description, price_usdc, category, seller_wallet });
+  } catch (error) {
+    console.error('Failed to register service:', error);
+    res.status(500).json({ error: 'Failed to register service' });
+  }
+});
+
 router.get('/:id', (req, res) => {
   const { id } = req.params;
   const db = getDB();
@@ -47,6 +73,21 @@ router.get('/:id', (req, res) => {
     res.status(404).json({ error: 'Service not found' });
   }
   stmt.free();
+});
+
+router.delete('/:id', (req, res) => {
+  const { id } = req.params;
+  const db = getDB();
+  try {
+    const stmt = db.prepare('DELETE FROM services WHERE id = ?');
+    stmt.run([id]);
+    stmt.free();
+    import('../db.js').then(({ saveDB }) => saveDB());
+    res.json({ success: true, deleted: id });
+  } catch (error) {
+    console.error('Failed to delete service:', error);
+    res.status(500).json({ error: 'Failed to delete service' });
+  }
 });
 
 export default router;
