@@ -34,6 +34,7 @@ app.use('/services', servicesRouter);
 app.use('/orders', ordersRouter);
 app.use('/wallet', walletRouter);
 app.use('/webhook', webhookRouter);
+app.use('/checkout', checkoutRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
